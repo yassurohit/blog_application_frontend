@@ -16,7 +16,7 @@ class OTPPage extends StatefulWidget {
 
 class _State extends State<OTPPage> {
   TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  TextEditingController otpController = TextEditingController();
   Color backgroundColor1 = const Color(0xFFF1F1F1);
   Color backgroundColor2 = const Color(0xFFF1F1F1);
   String _email = '';
@@ -160,13 +160,7 @@ class _State extends State<OTPPage> {
                       ),
                     ),
                     child: TextField(
-                      controller: emailController,
-                      keyboardType: TextInputType.visiblePassword,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(32),
-                        FilteringTextInputFormatter.deny(' '),
-                        FilteringTextInputFormatter.singleLineFormatter,
-                      ],
+                      controller: otpController,
                       onChanged: (otp) {
                         setState(() {
                           _otp = otp;
@@ -213,14 +207,18 @@ class _State extends State<OTPPage> {
                     ),
                     onPressed: () async {
                       if (!isOTPSended) {
-                        bool isLoginSuccess = await sendOtp(_email);
-                        if (isLoginSuccess) {
-                          context.go('/blog');
+                        sendOtp(_email);
+                      } else {
+                        bool isSuccess = await verifyOTP(_email, _otp);
+                        if (isSuccess) {
+                          if (mounted) {
+                            context.push('/blog');
+                          }
                         }
-                      } else {}
+                      }
                     },
                     child: Text(
-                      isOTPSended ? 'verify OTP' : 'Sign in',
+                      isOTPSended ? 'verify OTP' : 'Send OTP',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
@@ -272,18 +270,19 @@ class _State extends State<OTPPage> {
       ToastUtils.showToast('Please enter valid email');
       return false;
     }
-    print("before Calling api");
     List<dynamic> response = await verifyOTPApicall(email, otp);
-    print("after Calling api");
     if (response[0]) {
       isLoginSuccess = true;
       setState(() {
         isOTPSended = true;
       });
-      String responseJson = response[1];
-      var jsonResponse = json.decode(responseJson);
-      String token = jsonResponse['access'];
+      var responseJson = response[1];
+      String token = responseJson['access'];
+      String email = responseJson['email'];
+      print("email:$email");
+      print("token:$token");
       SharedPrefsHelper().saveString('token', token);
+      SharedPrefsHelper().saveString('email', email);
       ToastUtils.showToast('Successfully Logged In');
     } else {
       ToastUtils.showToast('Invalid Credentials.Failed to Login');

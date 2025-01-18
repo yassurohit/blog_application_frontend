@@ -212,7 +212,7 @@ class _State extends State<LoginPage> {
                     ),
                     onPressed: () async {
                       bool isLoginSuccess = await _login(_email, _password);
-                      if (isLoginSuccess) {
+                      if (isLoginSuccess) { 
                         context.go('/blog');
                       }
                     },
@@ -304,7 +304,9 @@ class _State extends State<LoginPage> {
       String responseJson = response[1];
       var jsonResponse = json.decode(responseJson);
       String token = jsonResponse['access'];
+      String email = jsonResponse['email'];
       SharedPrefsHelper().saveString('token', token);
+      SharedPrefsHelper().saveString('email', email);
       ToastUtils.showToast('Successfully Logged In');
     } else {
       ToastUtils.showToast('Invalid Credentials.Failed to Login');

@@ -14,7 +14,7 @@ Future<List<dynamic>> createPostApiCall(String title, String content) async {
       'Authorization': 'Bearer $token'
     };
     var request = http.Request(
-        'POST', Uri.parse('http://192.168.1.129:8000/blog/send-post/'));
+        'POST', Uri.parse('http://127.0.0.1:8000/blog/send-post/'));
     request.body = json.encode({"title": title, "content": content});
     request.headers.addAll(headers);
     http.StreamedResponse response =

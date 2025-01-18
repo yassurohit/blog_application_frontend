@@ -1,39 +1,45 @@
 import 'dart:convert';
 
 import 'package:blog_flutter/apis/get_posts.dart';
+import 'package:blog_flutter/bloc/blog_event.dart';
+import 'package:blog_flutter/bloc/blog_state.dart';
 import 'package:blog_flutter/models/blog_model.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class BlogProvider with ChangeNotifier {
-  List<BlogPost> _posts = [];
+class BlogBloc extends Bloc<BlogEvent, BlogState> {
+  List<BlogPost> posts = [];
+  BlogBloc() : super(LoadingState()) {
+    on<FetchPostsEvent>(_onFetchPostsEvent);
+  }
 
-  List<BlogPost> get posts => _posts;
-
-  Future<void> fetchPosts() async {
+  Future<void> _onFetchPostsEvent(
+      FetchPostsEvent event, Emitter<BlogState> emit) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? cachedPosts = prefs.getString('blogPosts');
     if (cachedPosts != null) {
-      _posts = (json.decode(cachedPosts) as List)
+      posts = List.from((json.decode(cachedPosts) as List)
           .map((data) => BlogPost.fromRawJson(json.encode(data)))
-          .toList();
-      notifyListeners();
+          .toList());
+      print("lenth:${posts.length}");
+      emit(FetchPostsState(posts: posts));
     }
 
     List<dynamic> result = await getPostsApiCall();
     if (result[0]) {
       List<BlogPost> fetchedPosts = result[1];
       List<BlogPost> newPosts = fetchedPosts.where((newPost) {
-        return !_posts
+        return !posts
             .any((existingPost) => existingPost.title == newPost.title);
       }).toList();
       if (newPosts.isNotEmpty) {
-        _posts.addAll(newPosts);
+        posts.addAll(newPosts);
         await prefs.setString(
             'blogPosts',
             json.encode(
-                _posts.map((post) => json.decode(post.toRawJson())).toList()));
-        notifyListeners();
+                posts.map((post) => json.decode(post.toRawJson())).toList()));
+        print(":$posts");
+        emit(FetchPostsState(posts: posts));
       }
     }
   }

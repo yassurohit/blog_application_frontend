@@ -7,7 +7,7 @@ Future<List<dynamic>> sendOTPApiCall(String email) async {
   try {
     var headers = {'Content-Type': 'application/json'};
     var request = http.Request(
-        'POST', Uri.parse('http://192.168.29.136:8000/users/login/send-otp'));
+        'POST', Uri.parse('http://127.0.0.1:8000/users/login/send-otp'));
     request.body = json.encode({"email": email});
     request.headers.addAll(headers);
 

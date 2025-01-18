@@ -47,7 +47,7 @@ class BlogDetails extends StatelessWidget {
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Image.network("http://192.168.29.136:8000/$image"),
+            child: Image.network("http://127.0.0.1:8000/$image"),
           ),
           const SizedBox(height: 20),
           ElevatedButton(

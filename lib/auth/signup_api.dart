@@ -11,7 +11,7 @@ Future<List<dynamic>> signUpApiCall(
   try {
     var headers = {'Content-Type': 'application/json'};
     var request = http.Request(
-        'POST', Uri.parse('http://192.168.1.129:8000/users/register/'));
+        'POST', Uri.parse('http://127.0.0.1:8000/users/register/'));
     request.body = json
         .encode({"username": username, "email": email, "password": password});
     request.headers.addAll(headers);

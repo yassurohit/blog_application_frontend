@@ -10,8 +10,8 @@ Future<List<dynamic>> getPostsApiCall() async {
   List<dynamic> apiResponse = [];
   try {
     var headers = {'Authorization': 'Bearer $token'};
-    var request = http.Request(
-        'GET', Uri.parse('http://192.168.29.136:8000/blog/posts/'));
+    var request =
+        http.Request('GET', Uri.parse('http://127.0.0.1:8000/blog/posts/'));
     request.headers.addAll(headers);
     http.StreamedResponse response =
         await request.send().timeout(const Duration(seconds: 100));

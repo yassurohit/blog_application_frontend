@@ -1,27 +1,30 @@
+import 'package:blog_flutter/bloc/blog_bloc.dart';
+import 'package:blog_flutter/bloc/blog_event.dart';
+import 'package:blog_flutter/bloc/blog_state.dart';
 import 'package:blog_flutter/components/blog_cart.dart';
-import 'package:blog_flutter/helpers/blog_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:blog_flutter/models/blog_model.dart';
-// import 'new_post_page.dart'; // Import the NewPostPage
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class BlogPage extends StatefulWidget {
   const BlogPage({super.key});
 
   @override
-  _State createState() => _State();
+  State createState() => _State();
 }
 
 class _State extends State<BlogPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<BlogPost> posts = [];
+  final BlogBloc blogBloc = BlogBloc();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    Future.microtask(
-        () => Provider.of<BlogProvider>(context, listen: false).fetchPosts());
+    // Fetch posts when the page initializes
+    blogBloc.add(FetchPostsEvent());
   }
 
   @override
@@ -32,9 +35,6 @@ class _State extends State<BlogPage> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final blogProvider = Provider.of<BlogProvider>(context);
-    final posts = blogProvider.posts;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -58,73 +58,19 @@ class _State extends State<BlogPage> with SingleTickerProviderStateMixin {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  //MyPosts Tab
-                  ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      BlogPost post = posts[index];
-                      return GestureDetector(
-                        onTap: () {
-                          context.push(
-                            '/blog-details/${Uri.encodeComponent(post.title)}/${Uri.encodeComponent(post.content)}/${Uri.encodeComponent(post.image)}',
-                          );
-                        },
-                        child: BlogCard(
-                          imageUrl: post.image,
-                          title: post.title,
-                          date: 'Jan 12',
-                          readTime: '8 min read',
-                        ),
-                      );
-                    },
-                  ),
-                  //AllPostsTab
-                  ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      BlogPost post = posts[index];
-                      return GestureDetector(
-                        onTap: () {
-                          context.push(
-                            '/blog-details/${Uri.encodeComponent(post.title)}/${Uri.encodeComponent(post.content)}/${Uri.encodeComponent(post.image)}',
-                          );
-                        },
-                        child: BlogCard(
-                          imageUrl: post.image,
-                          title: post.title,
-                          date: 'Jan 12',
-                          readTime: '8 min read',
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      body: BlocConsumer<BlogBloc, BlogState>(
+        bloc: blogBloc,
+        listener: (context, state) {
+          if (state is FetchPostsState) {
+            print("state posts:${state.posts}");
+            setState(() {
+              posts = List.from(state.posts);
+            });
+          }
+        },
+        builder: (context, state) {
+          return buildTabBarView();
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -136,6 +82,61 @@ class _State extends State<BlogPage> with SingleTickerProviderStateMixin {
           color: Colors.white,
         ),
       ),
+    );
+  }
+
+  Widget buildTabBarView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.grey[200],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                buildPostList(),
+                buildPostList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildPostList() {
+    return ListView.builder(
+      itemCount: posts.length,
+      itemBuilder: (context, index) {
+        BlogPost post = posts[index];
+        return GestureDetector(
+          onTap: () {
+            context.push(
+              '/blog-details/${Uri.encodeComponent(post.title)}/${Uri.encodeComponent(post.content)}/${Uri.encodeComponent(post.image)}',
+            );
+          },
+          child: BlogCard(
+            imageUrl: post.image,
+            title: post.title,
+            date: 'Jan 12',
+            readTime: '8 min read',
+          ),
+        );
+      },
     );
   }
 }

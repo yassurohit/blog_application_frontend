@@ -31,7 +31,7 @@ class BlogCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
-                image: NetworkImage("http://192.168.29.136:8000/$imageUrl"),
+                image: NetworkImage("http://127.0.0.1:8000/$imageUrl"),
                 fit: BoxFit.cover,
               ),
             ),

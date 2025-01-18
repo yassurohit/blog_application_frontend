@@ -8,8 +8,8 @@ Future<List<dynamic>> loginApiCall(String username, String password) async {
   List<dynamic> apiResponse = [];
   try {
     var headers = {'Content-Type': 'application/json'};
-    var request = http.Request(
-        'POST', Uri.parse('http://192.168.29.136:8000/users/login/'));
+    var request =
+        http.Request('POST', Uri.parse('http://127.0.0.1:8000/users/login/'));
     request.body = json.encode({"email": username, "password": password});
     request.headers.addAll(headers);
     http.StreamedResponse response =
